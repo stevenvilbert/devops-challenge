@@ -15,7 +15,7 @@ terraform {
 
   backend "gcs" {
     bucket = "moonpay-playground-tfstate"
-    prefix = "prod"
+    prefix = "global"
   }
 
   required_providers {
