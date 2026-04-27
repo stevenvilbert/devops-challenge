@@ -10,6 +10,7 @@ module "gke" {
   env = local.environment
   project_id  = local.project_id
   region      = local.region
+  service_account_email = module.iam.service_account_email
 }
 
 # module "cloudsql" {
