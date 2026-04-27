@@ -50,6 +50,18 @@ jobs:
           SHORT_SHA=$(echo "${{ github.sha }}" | cut -c1-7)
           echo "image_tag=${SHORT_SHA}" >> "$GITHUB_OUTPUT"
 
+      - name: Verify image repo secret
+        run: |
+          if [ -z "${{ secrets.IMAGE_REPO }}" ]; then
+            echo "::error::IMAGE_REPO secret is empty or not set"
+            exit 1
+          fi
+          # Print length and masked value to confirm it resolved
+          echo "IMAGE_REPO length: ${#IMAGE_REPO}"
+          echo "IMAGE_REPO ends with: ...${IMAGE_REPO: -20}"
+        env:
+          IMAGE_REPO: ${{ secrets.IMAGE_REPO }}
+
       - name: Build and push Docker image
         run: |
           IMAGE="${{ secrets.IMAGE_REPO }}:${{ steps.meta.outputs.image_tag }}"
