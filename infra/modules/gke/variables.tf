@@ -20,6 +20,14 @@ variable "service_account_email" {
   type = string
 }
 
+variable "network" {
+  type = string
+}
+
+variable "subnetwork" {
+  type = string
+}
+
 variable "gke_disk_space" {
   type    = number
   default = 30

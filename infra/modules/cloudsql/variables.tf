@@ -20,6 +20,10 @@ variable "region" {
   type = string
 }
 
-variable "cloudsql_replication_region"{
-    type = string
+variable "cloudsql_replication_region" {
+  type = string
+}
+
+variable "network_id" {
+  type = string
 }
