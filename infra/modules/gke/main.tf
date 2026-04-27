@@ -7,6 +7,13 @@ resource "google_container_cluster" "primary" {
   # node pool and immediately delete it.
   remove_default_node_pool = true
   initial_node_count       = 1
+  node_pool_defaults {
+
+  }
+
+  node_config {
+    disk_size_gb = 15
+  }
   cluster_autoscaling {
     
   }
@@ -19,6 +26,7 @@ resource "google_container_node_pool" "primary_preemptible_nodes" {
   
   #this defines default node count, autoscaling config will apply after deploy
   node_count = var.node_count
+
 
   node_config {
     preemptible  = true
