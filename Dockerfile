@@ -48,6 +48,10 @@ COPY --from=dependencies /app/node_modules ./node_modules
 # Copy application source code
 COPY . .
 
+# Restore the Prisma client generated during the dependencies stage
+# (COPY . . overwrites prisma/ from source which lacks generated/)
+COPY --from=dependencies /app/prisma/generated ./prisma/generated
+
 ENV NODE_ENV=production
 
 # Next.js collects completely anonymous telemetry data about general usage.
