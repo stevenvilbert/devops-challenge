@@ -98,6 +98,9 @@ jobs:
           location: ${{ env.GKE_REGION }}
           project_id: ${{ env.GCP_PROJECT }}
 
+      - name: Create namespace
+        run: kubectl create namespace ${{ env.K8S_NAMESPACE }} --dry-run=client -o yaml | kubectl apply -f -
+
       # Pull ALL secrets with the label app=moonpay from GCP Secret Manager
       # and create/update a single K8s secret containing them all.
       - name: Sync GCP secrets to K8s
