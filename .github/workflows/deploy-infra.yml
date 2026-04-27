@@ -106,6 +106,9 @@ jobs:
   apply-auto:
     name: "Apply (${{ matrix.environment }})"
     needs: [detect-environments, plan]
+    permissions:
+      contents: 'read'
+      id-token: 'write'
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
@@ -169,6 +172,9 @@ jobs:
   apply-gated:
     name: "Apply Gated (${{ matrix.environment }})"
     needs: [detect-environments, plan]
+    permissions:
+      contents: 'read'
+      id-token: 'write'
     runs-on: ubuntu-latest
     if: >-
       always() && needs.plan.result == 'success'
