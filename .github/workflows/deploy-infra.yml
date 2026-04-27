@@ -1,0 +1,221 @@
+name: Deploy Infrastructure
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "infra/**"
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: "Specific environment to deploy (leave empty for all changed)"
+        required: false
+        type: string
+
+# Prevent concurrent deploys to the same environment
+concurrency:
+  group: deploy-infra-${{ github.ref }}
+  cancel-in-progress: false
+
+env:
+  TF_VERSION: "1.14.7"
+  # Comma-separated list of environments that require manual approval before apply.
+  # These must have matching GitHub Environments configured with required reviewers.
+  ENVIRONMENTS_REQUIRING_APPROVAL: "prod"
+
+jobs:
+  # -----------------------------------s----------------------------------------
+  # 1. Discover which environments exist under infra/environments/
+  # ---------------------------------------------------------------------------
+  detect-environments:
+    name: Detect Environments
+    runs-on: ubuntu-latest
+    outputs:
+      environments: ${{ steps.envs.outputs.environments }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: List environments
+        id: envs
+        run: |
+          if [[ -n "${{ inputs.environment }}" ]]; then
+            # Manual trigger with a specific environment
+            envs=$(echo '["${{ inputs.environment }}"]')
+          else
+            # Auto-detect from directory structure
+            envs=$(ls -d infra/environments/*/ 2>/dev/null \
+              | xargs -I{} basename {} \
+              | jq -R -s -c 'split("\n") | map(select(length > 0))')
+          fi
+          echo "environments=${envs}" >> "$GITHUB_OUTPUT"
+          echo "Detected environments: ${envs}"
+
+  # ---------------------------------------------------------------------------
+  # 2. Terraform Plan – runs for every detected environment
+  # ---------------------------------------------------------------------------
+  plan:
+    name: "Plan (${{ matrix.environment }})"
+    needs: detect-environments
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        environment: ${{ fromJson(needs.detect-environments.outputs.environments) }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: ${{ env.TF_VERSION }}
+
+      - name: Authenticate to GCP
+        uses: google-github-actions/auth@v2
+        with:
+          workload_identity_provider: ${{ secrets.GCP_WORKLOAD_IDENTITY_PROVIDER }}
+          service_account: ${{ secrets.GCP_SERVICE_ACCOUNT }}
+
+      - name: Terraform Init
+        working-directory: infra/environments/${{ matrix.environment }}
+        run: terraform init -input=false
+
+      - name: Terraform Validate
+        working-directory: infra/environments/${{ matrix.environment }}
+        run: terraform validate
+
+      - name: Terraform Plan
+        working-directory: infra/environments/${{ matrix.environment }}
+        run: terraform plan -input=false -out=tfplan
+
+      - name: Upload Plan Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: tfplan-${{ matrix.environment }}
+          path: infra/environments/${{ matrix.environment }}/tfplan
+          retention-days: 5
+
+  # ---------------------------------------------------------------------------
+  # 3. Apply – auto-approved environments (NOT in ENVIRONMENTS_REQUIRING_APPROVAL)
+  # ---------------------------------------------------------------------------
+  apply-auto:
+    name: "Apply (${{ matrix.environment }})"
+    needs: [detect-environments, plan]
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        environment: ${{ fromJson(needs.detect-environments.outputs.environments) }}
+        exclude: []
+    # Only run for environments that do NOT require approval
+    if: >-
+      always() && needs.plan.result == 'success'
+    steps:
+      - name: Check if auto-apply
+        id: gate
+        run: |
+          IFS=',' read -ra APPROVAL_LIST <<< "${{ env.ENVIRONMENTS_REQUIRING_APPROVAL }}"
+          for env in "${APPROVAL_LIST[@]}"; do
+            trimmed=$(echo "$env" | xargs)
+            if [[ "$trimmed" == "${{ matrix.environment }}" ]]; then
+              echo "requires_approval=true" >> "$GITHUB_OUTPUT"
+              exit 0
+            fi
+          done
+          echo "requires_approval=false" >> "$GITHUB_OUTPUT"
+
+      - uses: actions/checkout@v4
+        if: steps.gate.outputs.requires_approval == 'false'
+
+      - name: Setup Terraform
+        if: steps.gate.outputs.requires_approval == 'false'
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: ${{ env.TF_VERSION }}
+
+      - name: Authenticate to GCP
+        if: steps.gate.outputs.requires_approval == 'false'
+        uses: google-github-actions/auth@v2
+        with:
+          workload_identity_provider: ${{ secrets.GCP_WORKLOAD_IDENTITY_PROVIDER }}
+          service_account: ${{ secrets.GCP_SERVICE_ACCOUNT }}
+
+      - name: Terraform Init
+        if: steps.gate.outputs.requires_approval == 'false'
+        working-directory: infra/environments/${{ matrix.environment }}
+        run: terraform init -input=false
+
+      - name: Download Plan Artifact
+        if: steps.gate.outputs.requires_approval == 'false'
+        uses: actions/download-artifact@v4
+        with:
+          name: tfplan-${{ matrix.environment }}
+          path: infra/environments/${{ matrix.environment }}
+
+      - name: Terraform Apply
+        if: steps.gate.outputs.requires_approval == 'false'
+        working-directory: infra/environments/${{ matrix.environment }}
+        run: terraform apply -input=false -auto-approve tfplan
+
+  # ---------------------------------------------------------------------------
+  # 4. Apply – gated environments (IN ENVIRONMENTS_REQUIRING_APPROVAL)
+  #    Uses a GitHub Environment with required reviewers for the approval gate.
+  # ---------------------------------------------------------------------------
+  apply-gated:
+    name: "Apply Gated (${{ matrix.environment }})"
+    needs: [detect-environments, plan]
+    runs-on: ubuntu-latest
+    if: >-
+      always() && needs.plan.result == 'success'
+    strategy:
+      fail-fast: false
+      matrix:
+        environment: ${{ fromJson(needs.detect-environments.outputs.environments) }}
+    # The GitHub Environment provides the approval gate.
+    # Environment name must match the directory name (e.g. "prod").
+    environment: ${{ matrix.environment }}
+    steps:
+      - name: Check if gated
+        id: gate
+        run: |
+          IFS=',' read -ra APPROVAL_LIST <<< "${{ env.ENVIRONMENTS_REQUIRING_APPROVAL }}"
+          for env in "${APPROVAL_LIST[@]}"; do
+            trimmed=$(echo "$env" | xargs)
+            if [[ "$trimmed" == "${{ matrix.environment }}" ]]; then
+              echo "requires_approval=true" >> "$GITHUB_OUTPUT"
+              exit 0
+            fi
+          done
+          echo "requires_approval=false" >> "$GITHUB_OUTPUT"
+
+      - uses: actions/checkout@v4
+        if: steps.gate.outputs.requires_approval == 'true'
+
+      - name: Setup Terraform
+        if: steps.gate.outputs.requires_approval == 'true'
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: ${{ env.TF_VERSION }}
+
+      - name: Authenticate to GCP
+        if: steps.gate.outputs.requires_approval == 'true'
+        uses: google-github-actions/auth@v2
+        with:
+          workload_identity_provider: ${{ secrets.GCP_WORKLOAD_IDENTITY_PROVIDER }}
+          service_account: ${{ secrets.GCP_SERVICE_ACCOUNT }}
+
+      - name: Terraform Init
+        if: steps.gate.outputs.requires_approval == 'true'
+        working-directory: infra/environments/${{ matrix.environment }}
+        run: terraform init -input=false
+
+      - name: Download Plan Artifact
+        if: steps.gate.outputs.requires_approval == 'true'
+        uses: actions/download-artifact@v4
+        with:
+          name: tfplan-${{ matrix.environment }}
+          path: infra/environments/${{ matrix.environment }}
+
+      - name: Terraform Apply
+        if: steps.gate.outputs.requires_approval == 'true'
+        working-directory: infra/environments/${{ matrix.environment }}
+        run: terraform apply -input=false -auto-approve tfplan
