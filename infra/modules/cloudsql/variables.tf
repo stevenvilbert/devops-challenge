@@ -19,3 +19,7 @@ variable "project_id" {
 variable "region" {
   type = string
 }
+
+variable "cloudsql_replication_region"{
+    type = string
+}

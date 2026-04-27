@@ -2,7 +2,8 @@ locals {
   environment = "prod"
   project_id  = "moonpay-playground"
   region      = "us-central1"
-  gke_node_count = 2
+  replication_region = "us-east1"
+  gke_node_count = 1  
   gke_disk_space = 20
 }
 
@@ -18,12 +19,13 @@ module "gke" {
   gke_disk_space = local.gke_disk_space
 }
 
-# module "cloudsql" {
-#   source      = "../../modules/cloudsql"
-#   env = local.environment
-#   project_id  = local.project_id
-#   region      = local.region
-# }
+module "cloudsql" {
+  source      = "../../modules/cloudsql"
+  env = local.environment
+  project_id  = local.project_id
+  region      = local.region
+  cloudsql_replication_region = local.replication_region
+}
 
 module "iam" {
   source      = "../../modules/iam"
