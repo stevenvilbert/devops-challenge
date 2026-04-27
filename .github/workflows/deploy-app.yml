@@ -16,7 +16,7 @@ env:
   GKE_CLUSTER: moonpay-gke-cluster-prod
   GKE_REGION: us-central1
   GCP_PROJECT: moonpay-playground
-  K8S_NAMESPACE: default
+  K8S_NAMESPACE: moonpay-prod
   K8S_SECRET_NAME: moonpay-app-secrets
   HELM_RELEASE: moonpay
 
@@ -142,6 +142,7 @@ jobs:
         run: |
           helm upgrade --install ${{ env.HELM_RELEASE }} ./helm \
             --namespace ${{ env.K8S_NAMESPACE }} \
+            --create-namespace \
             --set app.image.repository=${{ secrets.IMAGE_REPO }} \
             --set app.image.tag=${{ needs.build.outputs.image_tag }} \
             --set app.secretName=${{ env.K8S_SECRET_NAME }} \

@@ -1,3 +1,8 @@
+namespace:
+  name: moonpay-prod
+  environment: prod
+  app: moonpay
+
 app:
   name: moonpay-app
   replicaCount: 2
