@@ -78,6 +78,9 @@ jobs:
           workload_identity_provider: ${{ secrets.GCP_WORKLOAD_IDENTITY_PROVIDER }}
           service_account: ${{ secrets.GCP_SERVICE_ACCOUNT }}
 
+      - name: Verify GCP Identity
+        run: gcloud auth list
+
       - name: Terraform Init
         working-directory: infra/environments/${{ matrix.environment }}
         run: terraform init -input=false
