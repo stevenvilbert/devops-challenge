@@ -6,6 +6,7 @@ locals {
 
 
 module "gke" {
+  depends_on = [ module.iam ]
   source      = "../../modules/gke"
   env = local.environment
   project_id  = local.project_id
