@@ -12,8 +12,10 @@ FROM node:${NODE_VERSION} AS dependencies
 # Set working directory
 WORKDIR /app
 
-# Copy package-related files first to leverage Docker's caching mechanism
+# Copy package-related files and prisma schema (needed by postinstall: prisma generate)
 COPY package.json yarn.lock* package-lock.json* pnpm-lock.yaml* .npmrc* ./
+COPY prisma ./prisma
+COPY prisma.config.ts ./
 
 # Install project dependencies with frozen lockfile for reproducible builds
 RUN --mount=type=cache,target=/root/.npm \
