@@ -19,3 +19,7 @@ variable "region" {
 variable "service_account_email" {
   type = string
 }
+
+variable "gke_disk_space" {
+  type = number
+}

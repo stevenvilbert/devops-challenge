@@ -3,6 +3,7 @@ locals {
   project_id  = "moonpay-playground"
   region      = "us-central1"
   gke_node_count = 2
+  gke_disk_space = 30
 }
 
 
@@ -14,6 +15,7 @@ module "gke" {
   region      = local.region
   service_account_email = module.iam.service_account_email
   node_count = local.gke_node_count
+  gke_disk_space = local.gke_disk_space
 }
 
 # module "cloudsql" {
