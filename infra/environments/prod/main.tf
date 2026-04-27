@@ -3,7 +3,7 @@ locals {
   project_id  = "moonpay-playground"
   region      = "us-central1"
   gke_node_count = 2
-  gke_disk_space = 30
+  gke_disk_space = 20
 }
 
 

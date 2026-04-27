@@ -22,10 +22,10 @@ variable "service_account_email" {
 
 variable "gke_disk_space" {
   type    = number
-  default = 15
+  default = 30
 
   validation {
-    condition     = var.gke_disk_space <= 15
-    error_message = "Disk size must not exceed 15 GB for the default node pool."
+    condition     = var.gke_disk_space <= 30
+    error_message = "Disk size must not exceed 30 GB for the default node pool."
   }
 }
