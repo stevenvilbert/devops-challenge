@@ -1,0 +1,44 @@
+app:
+  name: moonpay-app
+  replicaCount: 2
+  image:
+    repository: gcr.io/moonpay-playground/devops-challenge
+    tag: latest
+    pullPolicy: IfNotPresent
+  port: 3000
+  # K8s secret created by the deploy workflow from GCP Secret Manager.
+  # All keys in this secret are injected as env vars into the app container.
+  secretName: moonpay-app-secrets
+  resources:
+    requests:
+      cpu: 100m
+      memory: 128Mi
+    limits:
+      cpu: 500m
+      memory: 512Mi
+
+database:
+  name: moonpay-db
+  image:
+    repository: postgres
+    tag: "14"
+    pullPolicy: IfNotPresent
+  port: 5432
+  storage: 10Gi
+  storageClassName: standard
+  resources:
+    requests:
+      cpu: 100m
+      memory: 256Mi
+    limits:
+      cpu: 500m
+      memory: 512Mi
+  env:
+    POSTGRES_DB: moonpay
+    POSTGRES_USER: moonpay
+
+ingress:
+  enabled: true
+  className: gce
+  host: ""
+  annotations: {}

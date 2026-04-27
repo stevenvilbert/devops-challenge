@@ -1,0 +1,6 @@
+apiVersion: v2
+name: moonpay-devops-challenge
+description: Helm chart for MoonPay Next.js app with PostgreSQL on GKE
+type: application
+version: 0.1.0
+appVersion: "1.0.0"

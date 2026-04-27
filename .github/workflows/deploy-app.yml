@@ -1,0 +1,137 @@
+name: Deploy Application
+
+on:
+  push:
+    branches: [main]
+    paths-ignore:
+      - "infra/**"
+      - "**.md"
+  workflow_dispatch:
+
+concurrency:
+  group: deploy-app-${{ github.ref }}
+  cancel-in-progress: false
+
+env:
+  GKE_CLUSTER: moonpay-gke-cluster-prod
+  GKE_REGION: us-central1
+  GCP_PROJECT: moonpay-playground
+  K8S_NAMESPACE: default
+  K8S_SECRET_NAME: moonpay-app-secrets
+  HELM_RELEASE: moonpay
+
+jobs:
+  # ---------------------------------------------------------------------------
+  # 1. Build, tag, and push Docker image
+  # ---------------------------------------------------------------------------
+  build:
+    name: Build & Push Image
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      id-token: write
+    outputs:
+      image_tag: ${{ steps.meta.outputs.image_tag }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Authenticate to GCP
+        uses: google-github-actions/auth@v2
+        with:
+          workload_identity_provider: ${{ secrets.GCP_WORKLOAD_IDENTITY_PROVIDER }}
+          service_account: ${{ secrets.GCP_SERVICE_ACCOUNT }}
+
+      - name: Configure Docker for Artifact Registry
+        run: gcloud auth configure-docker ${{ secrets.IMAGE_REGISTRY_HOST }} --quiet
+
+      - name: Generate image tag
+        id: meta
+        run: |
+          SHORT_SHA=$(echo "${{ github.sha }}" | cut -c1-7)
+          echo "image_tag=${SHORT_SHA}" >> "$GITHUB_OUTPUT"
+
+      - name: Build and push Docker image
+        run: |
+          IMAGE="${{ secrets.IMAGE_REPO }}:${{ steps.meta.outputs.image_tag }}"
+          docker build -t "${IMAGE}" .
+          docker push "${IMAGE}"
+          # Also tag as latest
+          docker tag "${IMAGE}" "${{ secrets.IMAGE_REPO }}:latest"
+          docker push "${{ secrets.IMAGE_REPO }}:latest"
+
+  # ---------------------------------------------------------------------------
+  # 2. Sync GCP Secret Manager secrets into the cluster as a K8s secret,
+  #    then deploy the Helm chart
+  # ---------------------------------------------------------------------------
+  deploy:
+    name: Deploy to GKE
+    needs: build
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      id-token: write
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Authenticate to GCP
+        uses: google-github-actions/auth@v2
+        with:
+          workload_identity_provider: ${{ secrets.GCP_WORKLOAD_IDENTITY_PROVIDER }}
+          service_account: ${{ secrets.GCP_SERVICE_ACCOUNT }}
+
+      - name: Get GKE credentials
+        uses: google-github-actions/get-gke-credentials@v2
+        with:
+          cluster_name: ${{ env.GKE_CLUSTER }}
+          location: ${{ env.GKE_REGION }}
+          project_id: ${{ env.GCP_PROJECT }}
+
+      # Pull ALL secrets with the label app=moonpay from GCP Secret Manager
+      # and create/update a single K8s secret containing them all.
+      - name: Sync GCP secrets to K8s
+        run: |
+          echo "Fetching secrets from GCP Secret Manager..."
+          SECRET_ARGS=""
+
+          # List all secrets with the app=moonpay label
+          SECRETS=$(gcloud secrets list \
+            --filter="labels.app=moonpay" \
+            --format="value(name)" \
+            --project="${{ env.GCP_PROJECT }}")
+
+          if [ -z "$SECRETS" ]; then
+            echo "::warning::No secrets found with label app=moonpay"
+            exit 0
+          fi
+
+          for SECRET_NAME in $SECRETS; do
+            echo "Fetching secret: ${SECRET_NAME}"
+            SECRET_VALUE=$(gcloud secrets versions access latest \
+              --secret="${SECRET_NAME}" \
+              --project="${{ env.GCP_PROJECT }}")
+
+            # Convert GCP secret name to K8s-friendly key (e.g. db-password -> DB_PASSWORD)
+            SECRET_KEY=$(echo "${SECRET_NAME}" | tr '[:lower:]-' '[:upper:]_')
+            SECRET_ARGS="${SECRET_ARGS} --from-literal=${SECRET_KEY}=${SECRET_VALUE}"
+          done
+
+          # Create or update the K8s secret
+          kubectl create secret generic ${{ env.K8S_SECRET_NAME }} \
+            ${SECRET_ARGS} \
+            --namespace=${{ env.K8S_NAMESPACE }} \
+            --dry-run=client -o yaml | kubectl apply -f -
+
+          echo "Secrets synced to K8s secret: ${{ env.K8S_SECRET_NAME }}"
+
+      - name: Set up Helm
+        uses: azure/setup-helm@v4
+
+      - name: Deploy with Helm
+        run: |
+          helm upgrade --install ${{ env.HELM_RELEASE }} ./helm \
+            --namespace ${{ env.K8S_NAMESPACE }} \
+            --set app.image.repository=${{ secrets.IMAGE_REPO }} \
+            --set app.image.tag=${{ needs.build.outputs.image_tag }} \
+            --set app.secretName=${{ env.K8S_SECRET_NAME }} \
+            --wait \
+            --timeout 5m
