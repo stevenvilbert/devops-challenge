@@ -49,9 +49,3 @@ resource "google_sql_user" "user" {
   instance = google_sql_database_instance.instance.name
   password = random_password.db_password.result
 }
-
-resource "google_sql_user" "user_replica" {
-  name     = "moonpay"
-  instance = google_sql_database_instance.read_replica.name
-  password = random_password.db_password.result
-}
