@@ -17,3 +17,7 @@ output "service_networking_connection" {
 output "lb_ip_address" {
   value = google_compute_global_address.lb_ip.address
 }
+
+output "ssl_policy_name" {
+  value = google_compute_ssl_policy.modern.name
+}
