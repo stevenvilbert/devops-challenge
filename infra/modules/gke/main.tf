@@ -21,7 +21,7 @@ resource "google_container_node_pool" "primary_preemptible_nodes" {
   name       = "moonpay-gke-${var.env}-np"
   location   = var.region
   cluster    = google_container_cluster.primary.name
-  
+
   #this defines default node count, autoscaling config will apply after deploy
   node_count = var.node_count
 
@@ -36,6 +36,13 @@ resource "google_container_node_pool" "primary_preemptible_nodes" {
     service_account = var.service_account_email
     oauth_scopes    = [
       "https://www.googleapis.com/auth/cloud-platform"
+    ]
+  }
+
+  lifecycle {
+    ignore_changes = [
+      node_count,
+      node_config[0].resource_labels,
     ]
   }
 }
