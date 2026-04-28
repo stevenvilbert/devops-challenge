@@ -9,6 +9,12 @@ resource "google_compute_subnetwork" "subnet1" {
   network       = google_compute_network.vpc_network.id
 }
 
+# Static IP for the public load balancer
+resource "google_compute_global_address" "lb_ip" {
+  name         = "moonpay-lb-ip-${var.env}"
+  address_type = "EXTERNAL"
+}
+
 # Reserve a private IP range for Google-managed services (Cloud SQL)
 resource "google_compute_global_address" "private_ip_range" {
   name          = "moonpay-private-ip-range-${var.env}"

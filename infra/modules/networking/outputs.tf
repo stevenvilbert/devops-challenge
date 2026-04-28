@@ -13,3 +13,7 @@ output "subnetwork_name" {
 output "service_networking_connection" {
   value = google_service_networking_connection.private_vpc_connection
 }
+
+output "lb_ip_address" {
+  value = google_compute_global_address.lb_ip.address
+}

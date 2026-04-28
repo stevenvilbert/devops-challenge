@@ -15,6 +15,13 @@ module "networking" {
   region     = local.region
 }
 
+module "dns" {
+  source        = "../../modules/dns"
+  env           = local.environment
+  domain        = "moonpay.svilbert.app"
+  lb_ip_address = module.networking.lb_ip_address
+}
+
 module "gke" {
   depends_on = [ module.iam ]
   source      = "../../modules/gke"
