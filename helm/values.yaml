@@ -22,25 +22,25 @@ app:
       cpu: 500m
       memory: 512Mi
 
-database:
-  name: moonpay-db
-  image:
-    repository: postgres
-    tag: "14"
-    pullPolicy: IfNotPresent
-  port: 5432
-  storage: 10Gi
-  storageClassName: standard
-  resources:
-    requests:
-      cpu: 100m
-      memory: 256Mi
-    limits:
-      cpu: 500m
-      memory: 512Mi
-  env:
-    POSTGRES_DB: currencies
-    POSTGRES_USER: postgres
+# database:
+#   name: moonpay-db
+#   image:
+#     repository: postgres
+#     tag: "14"
+#     pullPolicy: IfNotPresent
+#   port: 5432
+#   storage: 10Gi
+#   storageClassName: standard
+#   resources:
+#     requests:
+#       cpu: 100m
+#       memory: 256Mi
+#     limits:
+#       cpu: 500m
+#       memory: 512Mi
+#   env:
+#     POSTGRES_DB: currencies
+#     POSTGRES_USER: postgres
 
 ingress:
   enabled: true
