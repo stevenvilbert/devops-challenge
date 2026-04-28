@@ -1,16 +1,16 @@
-apiVersion: v1
-kind: Service
-metadata:
-  name: {{ .Values.database.name }}
-  namespace: {{ .Values.namespace.name }}
-  labels:
-    app: {{ .Values.database.name }}
-spec:
-  type: ClusterIP
-  clusterIP: None
-  selector:
-    app: {{ .Values.database.name }}
-  ports:
-    - port: {{ .Values.database.port }}
-      targetPort: {{ .Values.database.port }}
-      protocol: TCP
+# apiVersion: v1
+# kind: Service
+# metadata:
+#   name: {{ .Values.database.name }}
+#   namespace: {{ .Values.namespace.name }}
+#   labels:
+#     app: {{ .Values.database.name }}
+# spec:
+#   type: ClusterIP
+#   clusterIP: None
+#   selector:
+#     app: {{ .Values.database.name }}
+#   ports:
+#     - port: {{ .Values.database.port }}
+#       targetPort: {{ .Values.database.port }}
+#       protocol: TCP
