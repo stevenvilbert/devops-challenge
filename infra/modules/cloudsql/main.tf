@@ -38,14 +38,19 @@ resource "google_sql_database_instance" "read_replica" {
   deletion_protection = true
 }
 
-resource "random_password" "db_password" {
-  length           = 16
-  special          = true
-  override_special = "_%@"
+
+data "google_secret_manager_secret_version" "pg_pw" {
+  secret = "POSTGRES_PASSWORD"
 }
 
+data "google_secret_manager_secret_version" "pg_user" {
+  secret = "POSTGRES_USER"
+}
+
+
+
 resource "google_sql_user" "user" {
-  name     = "moonpay"
+  name     = data.google_secret_manager_secret_version.pg_user.secret_data
   instance = google_sql_database_instance.instance.name
-  password = random_password.db_password.result
+  password = data.google_secret_manager_secret_version.pg_pw.secret_data
 }
