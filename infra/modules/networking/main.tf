@@ -19,7 +19,6 @@ resource "google_compute_global_address" "lb_ip" {
 resource "google_compute_ssl_policy" "modern" {
   name            = "moonpay-ssl-policy-${var.env}"
   profile         = "RESTRICTED"
-  min_tls_version = "TLS_1_3"
 }
 
 # Allow GCP load balancer health checks to reach GKE node ports
