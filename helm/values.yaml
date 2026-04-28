@@ -39,8 +39,8 @@ database:
       cpu: 500m
       memory: 512Mi
   env:
-    POSTGRES_DB: moonpay
-    POSTGRES_USER: moonpay
+    POSTGRES_DB: currencies
+    POSTGRES_USER: postgres
 
 ingress:
   enabled: true
