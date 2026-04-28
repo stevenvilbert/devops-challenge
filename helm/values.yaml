@@ -45,5 +45,11 @@ database:
 ingress:
   enabled: true
   className: gce
-  host: ""
-  annotations: {}
+  host: moonpay.svilbert.app
+  staticIpName: moonpay-lb-ip-prod
+  managedCertName: moonpay-cert-prod
+  annotations:
+    kubernetes.io/ingress.global-static-ip-name: moonpay-lb-ip-prod
+    networking.gke.io/managed-certificates: moonpay-cert-prod
+    kubernetes.io/ingress.class: gce
+    networking.gke.io/v1beta1.FrontendConfig: moonpay-frontend-config
