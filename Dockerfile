@@ -123,4 +123,4 @@ USER node
 EXPOSE 3000
 
 # Run database migrations then start Next.js standalone server
-CMD npx prisma migrate deploy && node server.js
+CMD node ./node_modules/prisma/build/index.js migrate deploy && node server.js
