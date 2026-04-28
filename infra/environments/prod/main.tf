@@ -19,7 +19,6 @@ module "dns" {
   source        = "../../modules/dns"
   env           = local.environment
   domain        = "moonpay.svilbert.app"
-  project = local.project_id
   lb_ip_address = module.networking.lb_ip_address
 }
 
