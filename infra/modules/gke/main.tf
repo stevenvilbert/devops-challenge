@@ -11,6 +11,7 @@ resource "google_container_cluster" "primary" {
   initial_node_count       = 1
   node_config {
     disk_size_gb = 15
+    preemptible = false
   }
   cluster_autoscaling {
 
@@ -21,7 +22,7 @@ resource "google_container_node_pool" "primary_preemptible_nodes" {
   name       = "moonpay-gke-${var.env}-np"
   location   = var.region
   cluster    = google_container_cluster.primary.name
-
+  
   #this defines default node count, autoscaling config will apply after deploy
   node_count = var.node_count
 
