@@ -18,8 +18,8 @@ resource "google_compute_global_address" "lb_ip" {
 # SSL policy enforcing TLS 1.2+ with modern cipher suites
 resource "google_compute_ssl_policy" "modern" {
   name            = "moonpay-ssl-policy-${var.env}"
-  profile         = "MODERN"
-  min_tls_version = "TLS_1_2"
+  profile         = "RESTRICTED"
+  min_tls_version = "TLS_1_3"
 }
 
 # Allow GCP load balancer health checks to reach GKE node ports
