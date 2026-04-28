@@ -9,7 +9,7 @@ app:
   image:
     repository: gcr.io/moonpay-playground/devops-challenge
     tag: latest
-    pullPolicy: IfNotPresent
+    pullPolicy: Always
   port: 3000
   # K8s secret created by the deploy workflow from GCP Secret Manager.
   # All keys in this secret are injected as env vars into the app container.
