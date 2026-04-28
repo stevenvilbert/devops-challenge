@@ -20,6 +20,7 @@ module "dns" {
   env           = local.environment
   domain        = "moonpay.svilbert.app"
   lb_ip_address = module.networking.lb_ip_address
+  postgres_endpoint = module.cloudsql.postgres_endpoint
 }
 
 module "gke" {
