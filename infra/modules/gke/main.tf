@@ -27,7 +27,7 @@ resource "google_container_node_pool" "primary_preemptible_nodes" {
 
 
   node_config {
-    preemptible  = true
+    preemptible  = false
     machine_type = "e2-medium"
     disk_size_gb = var.gke_disk_space
     tags         = ["gke-moonpay-${var.env}"]
