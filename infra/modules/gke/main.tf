@@ -11,7 +11,7 @@ resource "google_container_cluster" "primary" {
   initial_node_count       = 1
   node_config {
     disk_size_gb = 15
-    preemptible = false
+    preemptible = true
   }
   cluster_autoscaling {
 
@@ -28,7 +28,7 @@ resource "google_container_node_pool" "primary_preemptible_nodes" {
 
 
   node_config {
-    preemptible  = false
+    preemptible  = true
     machine_type = "e2-medium"
     disk_size_gb = var.gke_disk_space
     tags         = ["gke-moonpay-${var.env}"]
