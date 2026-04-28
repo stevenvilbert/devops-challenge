@@ -99,7 +99,11 @@ jobs:
           project_id: ${{ env.GCP_PROJECT }}
 
       - name: Create namespace
-        run: kubectl create namespace ${{ env.K8S_NAMESPACE }} --dry-run=client -o yaml | kubectl apply -f -
+        run: |
+          kubectl create namespace ${{ env.K8S_NAMESPACE }} --dry-run=client -o yaml | kubectl apply -f -
+          kubectl label namespace ${{ env.K8S_NAMESPACE }} app.kubernetes.io/managed-by=Helm --overwrite
+          kubectl annotate namespace ${{ env.K8S_NAMESPACE }} meta.helm.sh/release-name=${{ env.HELM_RELEASE }} --overwrite
+          kubectl annotate namespace ${{ env.K8S_NAMESPACE }} meta.helm.sh/release-namespace=${{ env.K8S_NAMESPACE }} --overwrite
 
       # Pull ALL secrets with the label app=moonpay from GCP Secret Manager
       # and create/update a single K8s secret containing them all.
