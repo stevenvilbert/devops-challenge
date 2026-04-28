@@ -10,7 +10,7 @@ resource "google_container_cluster" "primary" {
   remove_default_node_pool = true
   initial_node_count       = 1
   node_config {
-    disk_size_gb = 15
+    disk_size_gb = 20
     preemptible = true
   }
   cluster_autoscaling {
