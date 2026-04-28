@@ -5,6 +5,7 @@ metadata:
   name: moonpay-frontend-config
   namespace: {{ .Values.namespace.name }}
 spec:
+  sslPolicy: {{ .Values.ingress.sslPolicyName }}
   redirectToHttps:
     enabled: true
     responseCodeName: MOVED_PERMANENTLY_DEFAULT

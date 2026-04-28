@@ -48,6 +48,7 @@ ingress:
   host: moonpay.svilbert.app
   staticIpName: moonpay-lb-ip-prod
   managedCertName: moonpay-cert-prod
+  sslPolicyName: moonpay-ssl-policy-prod
   annotations:
     kubernetes.io/ingress.global-static-ip-name: moonpay-lb-ip-prod
     networking.gke.io/managed-certificates: moonpay-cert-prod
