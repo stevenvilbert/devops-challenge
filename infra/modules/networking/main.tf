@@ -15,6 +15,20 @@ resource "google_compute_global_address" "lb_ip" {
   address_type = "EXTERNAL"
 }
 
+# Allow GCP load balancer health checks to reach GKE node ports
+resource "google_compute_firewall" "allow_health_checks" {
+  name    = "allow-lb-health-checks-${var.env}"
+  network = google_compute_network.vpc_network.name
+
+  allow {
+    protocol = "tcp"
+  }
+
+  direction     = "INGRESS"
+  source_ranges = ["130.211.0.0/22", "35.191.0.0/16"]
+  target_tags   = ["gke-moonpay-${var.env}"]
+}
+
 # Reserve a private IP range for Google-managed services (Cloud SQL)
 resource "google_compute_global_address" "private_ip_range" {
   name          = "moonpay-private-ip-range-${var.env}"
