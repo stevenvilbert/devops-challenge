@@ -6,6 +6,11 @@ namespace:
 app:
   name: moonpay-app
   replicaCount: 2
+  autoScaling:
+    horizontal:
+      maxReplicas: 10
+      averageCPU: 400m
+      averageRelativeMemory: 75
   image:
     repository: gcr.io/moonpay-playground/devops-challenge
     tag: latest
