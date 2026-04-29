@@ -25,3 +25,7 @@ output "lb_ip_address" {
 output "ssl_policy_name" {
   value = google_compute_ssl_policy.modern.name
 }
+
+output "ssl_certificate_name" {
+  value = google_compute_managed_ssl_certificate.default.name
+}

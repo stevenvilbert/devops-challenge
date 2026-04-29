@@ -28,6 +28,16 @@ resource "google_compute_ssl_policy" "modern" {
   profile = "RESTRICTED"
 }
 
+# Google-managed SSL certificate (global, not cluster-scoped)
+# Pre-provisioned so DR failovers don't wait for cert issuance
+resource "google_compute_managed_ssl_certificate" "default" {
+  name = "moonpay-ssl-cert-${var.env}"
+
+  managed {
+    domains = [var.domain]
+  }
+}
+
 # Allow GCP load balancer health checks to reach GKE node ports
 resource "google_compute_firewall" "allow_health_checks" {
   name    = "allow-lb-health-checks-${var.env}"
