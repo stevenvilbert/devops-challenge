@@ -1,16 +1,16 @@
 resource "google_compute_network" "vpc_network" {
-  name = "moonpay-vpc-${var.env}"
+  name = "moonpay-vpc"
 }
 
 resource "google_compute_subnetwork" "subnet1" {
-  name          = "moonpay-subnet-${var.env}"
+  name          = "moonpay-subnet"
   ip_cidr_range = "10.16.0.0/22"
   region        = "us-central1"
   network       = google_compute_network.vpc_network.id
 }
 
 resource "google_compute_subnetwork" "subnet2" {
-  name          = "moonpay-subnet-${var.env}"
+  name          = "moonpay-subnet"
   ip_cidr_range = "10.17.0.0/22"
   region        = "us-east1"
   network       = google_compute_network.vpc_network.id
