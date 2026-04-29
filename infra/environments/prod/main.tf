@@ -15,6 +15,7 @@ module "networking" {
   env        = local.environment
   project_id = local.project_id
   region     = local.region
+  dr_region = local.dr_region
 }
 
 module "dns" {

@@ -5,14 +5,14 @@ resource "google_compute_network" "vpc_network" {
 resource "google_compute_subnetwork" "subnet1" {
   name          = "moonpay-subnet"
   ip_cidr_range = "10.16.0.0/22"
-  region        = "us-central1"
+  region        = var.region
   network       = google_compute_network.vpc_network.id
 }
 
 resource "google_compute_subnetwork" "subnet2" {
   name          = "moonpay-subnet"
   ip_cidr_range = "10.17.0.0/22"
-  region        = "us-east1"
+  region        = var.dr_region
   network       = google_compute_network.vpc_network.id
 }
 
