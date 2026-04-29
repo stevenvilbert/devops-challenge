@@ -15,6 +15,7 @@ resource "google_container_cluster" "primary" {
 }
 
 resource "google_container_node_pool" "primary_preemptible_nodes" {
+  count    = var.enable_node_pool ? 1 : 0
   name     = "moonpay-gke-${var.env}-np"
   location = var.region
   cluster  = google_container_cluster.primary.name
@@ -27,7 +28,7 @@ resource "google_container_node_pool" "primary_preemptible_nodes" {
     preemptible  = true
     machine_type = "e2-medium"
     disk_size_gb = var.gke_disk_space
-    tags         = ["gke-moonpay-${var.env}"]
+    tags         = [var.network_tag != "" ? var.network_tag : "gke-moonpay-${var.env}"]
 
     # Google recommends custom service accounts that have cloud-platform scope and permissions granted via IAM Roles.
     service_account = var.service_account_email

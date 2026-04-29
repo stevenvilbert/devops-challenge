@@ -37,3 +37,13 @@ variable "gke_disk_space" {
     error_message = "Disk size must not exceed 30 GB for the default node pool."
   }
 }
+
+variable "enable_node_pool" {
+  type    = bool
+  default = true
+}
+
+variable "network_tag" {
+  type    = string
+  default = ""
+}

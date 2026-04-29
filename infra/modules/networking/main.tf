@@ -86,3 +86,49 @@ resource "google_compute_firewall" "deny_gke_to_cloudsql_other" {
   destination_ranges = [google_compute_global_address.private_ip_range.address]
   priority           = 65534
 }
+
+# DR region firewall rules
+
+# Allow GCP load balancer health checks to reach DR GKE node ports
+resource "google_compute_firewall" "allow_health_checks_dr" {
+  name    = "allow-lb-health-checks-dr-${var.env}"
+  network = google_compute_network.vpc_network.name
+
+  allow {
+    protocol = "tcp"
+  }
+
+  direction     = "INGRESS"
+  source_ranges = ["130.211.0.0/22", "35.191.0.0/16"]
+  target_tags   = ["gke-moonpay-dr-${var.env}"]
+}
+
+# Allow DR GKE nodes to reach Cloud SQL on port 5432 only
+resource "google_compute_firewall" "allow_gke_to_cloudsql_dr" {
+  name    = "allow-gke-to-cloudsql-dr-${var.env}"
+  network = google_compute_network.vpc_network.name
+
+  allow {
+    protocol = "tcp"
+    ports    = ["5432"]
+  }
+
+  direction          = "EGRESS"
+  destination_ranges = [google_compute_global_address.private_ip_range.address]
+  target_tags        = ["gke-moonpay-dr-${var.env}"]
+}
+
+# Deny all other traffic from DR GKE nodes to the Cloud SQL private range
+resource "google_compute_firewall" "deny_gke_to_cloudsql_other_dr" {
+  name    = "deny-gke-to-cloudsql-other-dr-${var.env}"
+  network = google_compute_network.vpc_network.name
+
+  deny {
+    protocol = "all"
+  }
+
+  direction          = "EGRESS"
+  destination_ranges = [google_compute_global_address.private_ip_range.address]
+  target_tags        = ["gke-moonpay-dr-${var.env}"]
+  priority           = 65534
+}

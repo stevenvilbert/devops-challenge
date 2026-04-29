@@ -15,3 +15,12 @@ variable "lb_ip_address" {
 variable "postgres_endpoint" {
   type = string
 }
+
+variable "postgres_replica_endpoint" {
+  type = string
+}
+
+variable "is_dr" {
+  type    = bool
+  default = false
+}

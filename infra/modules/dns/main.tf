@@ -15,5 +15,5 @@ resource "google_dns_record_set" "db" {
   type         = "A"
   ttl          = 300
   managed_zone = data.google_dns_managed_zone.env_dns_zone.name
-  rrdatas      = [var.postgres_endpoint]
+  rrdatas      = [var.is_dr ? var.postgres_replica_endpoint : var.postgres_endpoint]
 }

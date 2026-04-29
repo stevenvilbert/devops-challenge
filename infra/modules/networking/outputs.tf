@@ -10,6 +10,10 @@ output "subnetwork_name" {
   value = google_compute_subnetwork.subnet1.name
 }
 
+output "dr_subnetwork_name" {
+  value = google_compute_subnetwork.subnet2.name
+}
+
 output "service_networking_connection" {
   value = google_service_networking_connection.private_vpc_connection
 }
