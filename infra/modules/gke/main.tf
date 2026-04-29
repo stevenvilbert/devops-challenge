@@ -12,6 +12,12 @@ resource "google_container_cluster" "primary" {
   cluster_autoscaling {
 
   }
+
+  node_config {
+    disk_size_gb = 10
+    disk_type    = "pd-standard"
+    machine_type = "e2-small"
+  }
 }
 
 resource "google_container_node_pool" "primary_preemptible_nodes" {
