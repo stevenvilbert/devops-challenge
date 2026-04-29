@@ -13,11 +13,11 @@ resource "google_container_cluster" "primary" {
 
   }
 
-  node_config {
-    disk_size_gb = var.gke_disk_space
-    disk_type    = "pd-standard"
-    machine_type = "e2-small"
-  }
+#   node_config {
+#     disk_size_gb = var.gke_disk_space
+#     disk_type    = "pd-standard"
+#     machine_type = "e2-small"
+#   }
 }
 
 resource "google_container_node_pool" "primary_preemptible_nodes" {

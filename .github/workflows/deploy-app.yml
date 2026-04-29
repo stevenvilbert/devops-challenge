@@ -7,14 +7,23 @@ on:
       - "infra/**"
       - "**.md"
   workflow_dispatch:
+    inputs:
+      target_cluster:
+        description: "GKE cluster to deploy to (use DR cluster for failover)"
+        required: false
+        type: choice
+        options:
+          - moonpay-gke-cluster-prod
+          - moonpay-gke-cluster-dr-prod
+        default: moonpay-gke-cluster-prod
 
 concurrency:
   group: deploy-app-${{ github.ref }}
   cancel-in-progress: false
 
 env:
-  GKE_CLUSTER: moonpay-gke-cluster-prod
-  GKE_REGION: us-central1
+  GKE_CLUSTER: ${{ inputs.target_cluster || 'moonpay-gke-cluster-prod' }}
+  GKE_REGION: ${{ inputs.target_cluster == 'moonpay-gke-cluster-dr-prod' && 'us-east1' || 'us-central1' }}
   GCP_PROJECT: moonpay-playground
   K8S_NAMESPACE: moonpay-prod
   K8S_SECRET_NAME: moonpay-app-secrets
