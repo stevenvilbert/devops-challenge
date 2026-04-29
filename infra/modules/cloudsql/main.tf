@@ -17,7 +17,7 @@ resource "google_sql_database_instance" "instance" {
     }
   }
 
-  deletion_protection  = true
+  deletion_protection = true
 }
 
 resource "google_sql_database_instance" "read_replica" {
@@ -31,8 +31,11 @@ resource "google_sql_database_instance" "read_replica" {
   }
 
   settings {
-    tier              = var.database_tier
-    availability_type = "ZONAL"
+    tier = var.database_tier
+    ip_configuration {
+      ipv4_enabled    = false
+      private_network = var.network_id
+    }
   }
 
   deletion_protection = true

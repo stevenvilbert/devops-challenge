@@ -9,6 +9,13 @@ resource "google_compute_subnetwork" "subnet1" {
   network       = google_compute_network.vpc_network.id
 }
 
+resource "google_compute_subnetwork" "subnet2" {
+  name          = "moonpay-subnet"
+  ip_cidr_range = "10.17.0.0/22"
+  region        = "us-east1"
+  network       = google_compute_network.vpc_network.id
+}
+
 # Static IP for the public load balancer
 resource "google_compute_global_address" "lb_ip" {
   name         = "moonpay-lb-ip-${var.env}"
@@ -17,8 +24,8 @@ resource "google_compute_global_address" "lb_ip" {
 
 # SSL policy enforcing TLS 1.2+ with modern cipher suites
 resource "google_compute_ssl_policy" "modern" {
-  name            = "moonpay-ssl-policy-${var.env}"
-  profile         = "RESTRICTED"
+  name    = "moonpay-ssl-policy-${var.env}"
+  profile = "RESTRICTED"
 }
 
 # Allow GCP load balancer health checks to reach GKE node ports
@@ -61,9 +68,9 @@ resource "google_compute_firewall" "allow_gke_to_cloudsql" {
     ports    = ["5432"]
   }
 
-  direction     = "EGRESS"
+  direction          = "EGRESS"
   destination_ranges = [google_compute_global_address.private_ip_range.address]
-  target_tags   = ["gke-moonpay-${var.env}"]
+  target_tags        = ["gke-moonpay-${var.env}"]
 }
 
 # Deny all other traffic from GKE nodes to the Cloud SQL private range

@@ -1,7 +1,7 @@
 locals {
-  environment = "global"
-  project_id  = "moonpay-playground"
-  region      = "us-central1"
+  environment     = "global"
+  project_id      = "moonpay-playground"
+  region          = "us-central1"
   artifact_region = "us-west1"
 }
 

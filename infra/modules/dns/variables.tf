@@ -12,6 +12,6 @@ variable "lb_ip_address" {
   description = "External IP address of the load balancer"
 }
 
-variable "postgres_endpoint"{
+variable "postgres_endpoint" {
   type = string
 }

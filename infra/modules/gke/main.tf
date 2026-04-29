@@ -1,6 +1,6 @@
 resource "google_container_cluster" "primary" {
-  name     = "moonpay-gke-cluster-${var.env}"
-  location = var.region
+  name       = "moonpay-gke-cluster-${var.env}"
+  location   = var.region
   network    = var.network
   subnetwork = var.subnetwork
 
@@ -15,10 +15,10 @@ resource "google_container_cluster" "primary" {
 }
 
 resource "google_container_node_pool" "primary_preemptible_nodes" {
-  name       = "moonpay-gke-${var.env}-np"
-  location   = var.region
-  cluster    = google_container_cluster.primary.name
-  
+  name     = "moonpay-gke-${var.env}-np"
+  location = var.region
+  cluster  = google_container_cluster.primary.name
+
   #this defines default node count, autoscaling config will apply after deploy
   node_count = var.node_count
 
@@ -31,7 +31,7 @@ resource "google_container_node_pool" "primary_preemptible_nodes" {
 
     # Google recommends custom service accounts that have cloud-platform scope and permissions granted via IAM Roles.
     service_account = var.service_account_email
-    oauth_scopes    = [
+    oauth_scopes = [
       "https://www.googleapis.com/auth/cloud-platform"
     ]
   }
