@@ -5,7 +5,7 @@ namespace:
 
 app:
   name: moonpay-app
-  replicaCount: 2
+  replicas: 2
   autoScaling:
     horizontal:
       maxReplicas: 10
