@@ -1,13 +1,13 @@
-# locals {
-#   environment        = "prod"
-#   project_id         = "moonpay-playground"
-#   region             = "us-central1"
-#   replication_region = "us-east1"
-#   dr_region          = "us-east1"
-#   gke_node_count     = 1
-#   gke_disk_space     = 20
-#   is_dr              = false
-# }
+locals {
+  environment        = "prod"
+  project_id         = "moonpay-playground"
+  region             = "us-central1"
+  replication_region = "us-east1"
+  dr_region          = "us-east1"
+  gke_node_count     = 1
+  gke_disk_space     = 20
+  is_dr              = false
+}
 
 
 # module "networking" {
